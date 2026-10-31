@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Alpa Lines">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0B7A75">
+<title>Alpa Lines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Concept: one-column phone app. Sticky top bar, fixed bottom tab bar, cards on a cool grey ground.
+   Teal marks actions and trust, amber marks money and examples. Manrope for everything (has Latin and Cyrillic). */
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --line:#E1E6EB; --line-strong:#C9D1D9;
+  --fg:#0E1B2B; --muted:#52606F;
+  --btn:#0B7A75; --btn-ink:#FFFFFF; --accent:#0B7A75; --accent-soft:#E3F2F1; --accent-ink:#075A56;
+  --amber-soft:#FDE9C8; --amber-ink:#7A4300; --blue-soft:#E1ECFA; --blue-ink:#1F4C8F;
+  --rose-soft:#FBE5E8; --rose-ink:#8F2A3A; --danger:#B3261E; --bubble-in:#FFFFFF;
+  color-scheme:light;
+  --font:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1620; --surface:#16212E; --line:#263545; --line-strong:#34475A;
+    --fg:#E8EEF4; --muted:#9AA9B8;
+    --btn:#0B7A75; --btn-ink:#FFFFFF; --accent:#5FC4BE; --accent-soft:#14322F; --accent-ink:#8FE0DA;
+    --amber-soft:#3A2A10; --amber-ink:#F2C27A; --blue-soft:#16283F; --blue-ink:#9CC3F5;
+    --rose-soft:#3A1B21; --rose-ink:#F2A3B0; --danger:#FF8A80; --bubble-in:#1E2C3B;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1620; --surface:#16212E; --line:#263545; --line-strong:#34475A;
+  --fg:#E8EEF4; --muted:#9AA9B8;
+  --btn:#0B7A75; --btn-ink:#FFFFFF; --accent:#5FC4BE; --accent-soft:#14322F; --accent-ink:#8FE0DA;
+  --amber-soft:#3A2A10; --amber-ink:#F2C27A; --blue-soft:#16283F; --blue-ink:#9CC3F5;
+  --rose-soft:#3A1B21; --rose-ink:#F2A3B0; --danger:#FF8A80; --bubble-in:#1E2C3B;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:500 15px/1.45 var(--font);-webkit-text-size-adjust:100%}
+button,input,select,textarea{font-family:var(--font)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.in{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bar{position:sticky;top:0;padding-top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar .in{display:flex;align-items:center;gap:8px;min-height:56px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:-.4px;flex:1;min-width:0}
+.logo{width:30px;height:30px;border-radius:9px;background:var(--btn);display:grid;place-items:center;flex:none}
+.langs{display:flex}
+.lg{min-width:42px;min-height:44px;border:0;background:transparent;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer;border-radius:10px}
+.lg.on{color:var(--accent)}
+.icon{width:44px;height:44px;border:0;background:transparent;color:var(--fg);display:grid;place-items:center;cursor:pointer;margin-left:-10px;flex:none}
+.ttl{font-size:17px;font-weight:800;letter-spacing:-.2px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs .in{display:flex;justify-content:space-around}
+.tab{flex:1;min-height:60px;border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer}
+.tab.on{color:var(--accent);font-weight:800}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.btn{min-height:44px;border:0;border-radius:999px;padding:0 18px;background:var(--btn);color:var(--btn-ink);font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn.soft{background:var(--accent-soft);color:var(--accent-ink)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--line-strong)}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.55;cursor:default}
+.chip{display:inline-flex;align-items:center;min-height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;background:var(--bg);color:var(--muted);white-space:nowrap}
+.chip.teal{background:var(--accent-soft);color:var(--accent-ink)}
+.chip.amber{background:var(--amber-soft);color:var(--amber-ink)}
+.av{display:inline-grid;place-items:center;border-radius:50%;font-weight:800;flex:none;letter-spacing:.2px}
+.av0{background:var(--accent-soft);color:var(--accent-ink)}.av1{background:var(--amber-soft);color:var(--amber-ink)}
+.av2{background:var(--blue-soft);color:var(--blue-ink)}.av3{background:var(--rose-soft);color:var(--rose-ink)}
+.av4{background:var(--line);color:var(--fg)}
+.who{display:flex;align-items:center;gap:10px;min-width:0;background:none;border:0;padding:0;color:inherit;text-align:left;cursor:pointer;font:inherit;flex:1}
+.who .nm{font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who .sub{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.who>span:last-child{min-width:0;display:flex;flex-direction:column}
+.head{display:flex;align-items:center;gap:10px}
+.route{display:flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:-.3px;flex-wrap:wrap}
+.route svg{color:var(--muted);flex:none}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.price{font-weight:800;font-size:18px;color:var(--accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.price small{display:block;font-size:11px;font-weight:600;color:var(--muted);text-align:right}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.txt{white-space:pre-wrap;overflow-wrap:anywhere}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}
+.seg{display:flex;background:var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-weight:700;font-size:13px;cursor:pointer}
+.seg button.on{background:var(--btn);color:var(--btn-ink)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:13px;font-weight:700;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%;min-height:48px;border:1px solid var(--line-strong);border-radius:12px;padding:0 12px;background:var(--surface);color:var(--fg);font-size:16px;font-weight:500}
+.field textarea{padding:12px;min-height:110px;resize:vertical;line-height:1.45}
+.sel{min-height:44px!important;font-size:15px!important}
+.err{color:var(--danger);font-weight:700;font-size:13px}
+.note{font-size:12px;color:var(--muted);text-align:center}
+.empty{text-align:center;padding:28px 12px;color:var(--muted);display:flex;flex-direction:column;gap:12px;align-items:center}
+.empty p{max-width:30ch}
+.banner{background:var(--accent-soft);color:var(--accent-ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;font-weight:600}
+.teaser{display:flex;align-items:center;gap:10px;width:100%;min-height:56px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 14px 6px 10px;color:var(--muted);font-size:15px;cursor:pointer}
+.act{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.act button{min-height:44px;min-width:44px;border:0;background:transparent;color:var(--fg);display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:13px;padding:0 10px;cursor:pointer;border-radius:10px}
+.act button.liked{color:var(--danger)}
+.sp{flex:1}
+.msgs{display:flex;flex-direction:column;gap:8px}
+.b{max-width:80%;padding:9px 12px;border-radius:16px;overflow-wrap:anywhere;white-space:pre-wrap}
+.b.in-{align-self:flex-start;background:var(--bubble-in);border:1px solid var(--line);border-bottom-left-radius:4px}
+.b.out{align-self:flex-end;background:var(--btn);color:var(--btn-ink);border-bottom-right-radius:4px}
+.b time{display:block;font-size:11px;opacity:.75;margin-top:2px}
+.inputbar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);padding-block:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.inputbar form{display:flex;gap:8px;align-items:center}
+.inputbar input{flex:1;min-width:0;min-height:46px;border:1px solid var(--line-strong);border-radius:23px;padding:0 16px;background:var(--bg);color:var(--fg);font-size:16px}
+.send{width:46px;height:46px;border:0;border-radius:50%;background:var(--btn);color:var(--btn-ink);display:grid;place-items:center;cursor:pointer;flex:none}
+h2.sec{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:6px}
+.chatrow{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-align:left;cursor:pointer;color:inherit;font:inherit}
+.chatrow .mid{flex:1;min-width:0;display:flex;flex-direction:column}
+.chatrow .nm{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chatrow .ls{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sk{height:96px;border-radius:14px;background:var(--line);opacity:.6}
+@media (prefers-reduced-motion:no-preference){.card,.chatrow{transition:border-color .15s}}
+
+.vb{vertical-align:-2px;margin-left:4px;flex:none}
+.stories{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 8px;margin:0 -4px;scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}
+.st{border:0;background:none;padding:0;width:64px;flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;color:var(--fg);font:inherit}
+.ring{display:grid;place-items:center;width:60px;height:60px;border-radius:50%;border:2px solid var(--line-strong)}
+.ring.on{border:3px solid var(--accent)}
+.stn{font-size:11px;font-weight:600;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fab{width:52px;height:52px;border:0;border-radius:50%;background:var(--btn);color:var(--btn-ink);display:grid;place-items:center;cursor:pointer;align-self:center;flex:none;margin:0 4px}
+.scrim{position:fixed;inset:0;background:rgba(8,14,22,.55);z-index:20}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--surface);border-radius:18px 18px 0 0;padding:18px max(16px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;max-width:560px;margin:0 auto}
+.sheet h2{font-size:18px;font-weight:800;margin-bottom:2px}
+.btn.plain{background:transparent;color:var(--muted)}
+.stats{display:flex;gap:8px}
+.stats div{flex:1;min-width:0;background:var(--bg);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column}
+.stats b{font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stats span{font-size:12px;color:var(--muted);font-weight:600}
+.proCard{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:60px;background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--accent);border-radius:14px;padding:10px 14px;text-align:left;cursor:pointer;font:inherit}
+.proCard>span{display:flex;flex-direction:column;min-width:0}
+.proCard b{font-weight:800}.proCard .muted{color:var(--accent-ink);font-size:13px}
+.proHead{background:#0E1B2B;color:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.proHead h2{font-size:24px;font-weight:800;letter-spacing:-.4px;line-height:1.2}
+.proHead p{color:#C9D1D9;font-size:14px}
+.proTag{display:flex;align-items:center;gap:8px;color:#F2A33A;font-size:13px;letter-spacing:.6px}
+.card h3{font-size:16px;font-weight:800}
+.ck{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ck li{display:flex;gap:8px;font-size:14px;align-items:flex-start}
+.ck svg{flex:none;margin-top:1px;color:var(--accent)}
+.card.pro{border:2px solid var(--accent);position:relative;margin-top:6px}
+.pop{position:absolute;top:-12px;right:14px;background:#F2A33A;color:#2B1800;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js"></script>
+<script>
+var SUPABASE_URL='https://lfoivhniidhlfhltyqng.supabase.co';
+var SUPABASE_KEY='sb_publishable_LBcAc6Z1uONXSiLeW3je3Q_SFstiJDn';
+
+var T={
+uz:{tab_home:`Lenta`,tab_loads:`Yuklar`,tab_chats:`Chatlar`,tab_profile:`Profil`,
+cargo_tab:`Yuk e'lonlari`,trucks_tab:`Bo'sh mashinalar`,from:`Qayerdan`,to:`Qayerga`,any:`Hammasi`,
+post_cargo:`Yuk joylash`,post_truck:`Mashina joylash`,date:`Sana`,truck_type:`Mashina turi`,weight:`Og'irligi (t)`,
+cargo_name:`Yuk nomi`,note:`Izoh`,price:`Narx (USD)`,optional:`ixtiyoriy`,publish:`E'lon qilish`,cancel:`Bekor qilish`,
+contact:`Bog'lanish`,send:`Yuborish`,write_msg:`Xabar yozing`,
+no_loads:`Bu yo'nalishda hozircha e'lon yo'q. Birinchi bo'lib joylang.`,
+no_posts:`Lentada hali yangilik yo'q. Birinchi postni yozing.`,
+no_chats:`Hali suhbat yo'q. E'londagi "Bog'lanish" tugmasini bosing.`,
+share_prompt:`Yangilik yozing…`,share:`Ulashish`,kind_news:`Yangilik`,kind_truck:`Mashina bo'sh`,kind_cargo:`Yuk tayyor`,
+setup_title:`Kompaniyangizni tanishtiring`,setup_sub:`Uni tashuvchilar va yuk egalari ko'radi.`,
+company_name:`Kompaniya nomi`,company_type:`Turi`,carrier:`Tashuvchi`,shipper:`Yuk egasi`,manufacturer:`Ishlab chiqaruvchi`,
+city:`Shahar`,phone:`Telefon`,about:`Qisqacha tavsif`,save:`Saqlash`,edit:`Tahrirlash`,
+create_banner:`Yozish va e'lon joylash uchun kompaniya profilini yarating.`,create_btn:`Profil yaratish`,
+required:`Majburiy maydonlarni to'ldiring`,bad_route:`Yo'nalish noto'g'ri`,save_fail:`Saqlab bo'lmadi, qayta urinib ko'ring`,
+example:`Namuna`,owner_tools:`Egasi uchun`,add_examples:`Namuna ma'lumot qo'shish`,remove_examples:`Namunalarni o'chirish`,
+chat_note:`Demo: suhbatlar hozircha maxfiy emas.`,example_chat:`Bu namuna, javob kelmaydi.`,
+your_listings:`Sizning e'lonlaringiz`,your_posts:`Sizning postlaringiz`,delete:`O'chirish`,confirm:`Tasdiqlang`,
+ask_price:`Narxni so'rang`,back:`Orqaga`,loading:`Yuklanmoqda…`,
+no_db:`Ma'lumotlar bazasiga ulanib bo'lmadi.`,no_id:`Ilovadan foydalanish uchun tizimga kiring.`,
+listings:`E'lonlar`,posts:`Postlar`,message:`Xabar`,all_routes:`Barcha yo'nalishlar`,language:`Til`,
+now:`hozir`,ago_m:`{n} daq. oldin`,ago_h:`{n} soat oldin`,ago_d:`{n} kun oldin`,
+reefer:`Refrijerator`,tent:`Tent`,container:`Konteyner`,flatbed:`Ochiq platforma`,other:`Boshqa`,
+sample_hint:`Namuna ma'lumotlar bo'sh ilovani ko'rsatish uchun.`,version:`Sinov versiyasi`},
+ru:{tab_home:`Лента`,tab_loads:`Грузы`,tab_chats:`Чаты`,tab_profile:`Профиль`,
+cargo_tab:`Грузы`,trucks_tab:`Свободные машины`,from:`Откуда`,to:`Куда`,any:`Любой`,
+post_cargo:`Разместить груз`,post_truck:`Разместить машину`,date:`Дата`,truck_type:`Тип кузова`,weight:`Вес (т)`,
+cargo_name:`Груз`,note:`Примечание`,price:`Цена (USD)`,optional:`необязательно`,publish:`Опубликовать`,cancel:`Отмена`,
+contact:`Связаться`,send:`Отправить`,write_msg:`Введите сообщение`,
+no_loads:`Объявлений по этому направлению пока нет. Разместите первым.`,
+no_posts:`В ленте пока пусто. Напишите первый пост.`,
+no_chats:`Переписок пока нет. Нажмите «Связаться» в объявлении.`,
+share_prompt:`Что нового?`,share:`Опубликовать`,kind_news:`Новость`,kind_truck:`Машина свободна`,kind_cargo:`Груз готов`,
+setup_title:`Расскажите о компании`,setup_sub:`Её увидят перевозчики и грузоотправители.`,
+company_name:`Название компании`,company_type:`Тип`,carrier:`Перевозчик`,shipper:`Грузоотправитель`,manufacturer:`Производитель`,
+city:`Город`,phone:`Телефон`,about:`О компании`,save:`Сохранить`,edit:`Изменить`,
+create_banner:`Создайте профиль компании, чтобы писать и размещать объявления.`,create_btn:`Создать профиль`,
+required:`Заполните обязательные поля`,bad_route:`Неверное направление`,save_fail:`Не удалось сохранить, попробуйте ещё раз`,
+example:`Пример`,owner_tools:`Для владельца`,add_examples:`Добавить примеры`,remove_examples:`Удалить примеры`,
+chat_note:`Демо: переписка пока не приватна.`,example_chat:`Это пример, ответа не будет.`,
+your_listings:`Ваши объявления`,your_posts:`Ваши посты`,delete:`Удалить`,confirm:`Подтвердите`,
+ask_price:`Цена по запросу`,back:`Назад`,loading:`Загрузка…`,
+no_db:`Не удалось подключиться к базе данных.`,no_id:`Войдите в аккаунт, чтобы пользоваться приложением.`,
+listings:`Объявления`,posts:`Посты`,message:`Написать`,all_routes:`Все направления`,language:`Язык`,
+now:`сейчас`,ago_m:`{n} мин. назад`,ago_h:`{n} ч. назад`,ago_d:`{n} дн. назад`,
+reefer:`Рефрижератор`,tent:`Тент`,container:`Контейнер`,flatbed:`Платформа`,other:`Другое`,
+sample_hint:`Примеры нужны, чтобы показать приложение не пустым.`,version:`Тестовая версия`},
+en:{tab_home:`Feed`,tab_loads:`Loads`,tab_chats:`Chats`,tab_profile:`Profile`,
+cargo_tab:`Cargo to move`,trucks_tab:`Trucks available`,from:`From`,to:`To`,any:`Any`,
+post_cargo:`Post cargo`,post_truck:`Post truck`,date:`Date`,truck_type:`Truck type`,weight:`Weight (t)`,
+cargo_name:`Cargo`,note:`Note`,price:`Price (USD)`,optional:`optional`,publish:`Publish`,cancel:`Cancel`,
+contact:`Contact`,send:`Send`,write_msg:`Write a message`,
+no_loads:`No listings on this route yet. Post the first one.`,
+no_posts:`Nothing in the feed yet. Write the first post.`,
+no_chats:`No conversations yet. Tap "Contact" on a listing.`,
+share_prompt:`Share an update…`,share:`Share`,kind_news:`News`,kind_truck:`Truck free`,kind_cargo:`Cargo ready`,
+setup_title:`Introduce your company`,setup_sub:`Carriers and shippers will see it.`,
+company_name:`Company name`,company_type:`Type`,carrier:`Carrier`,shipper:`Shipper`,manufacturer:`Manufacturer`,
+city:`City`,phone:`Phone`,about:`About`,save:`Save`,edit:`Edit`,
+create_banner:`Create a company profile to post listings and send messages.`,create_btn:`Create profile`,
+required:`Fill in the required fields`,bad_route:`Check the route`,save_fail:`Could not save, please try again`,
+example:`Example`,owner_tools:`Owner tools`,add_examples:`Add example data`,remove_examples:`Remove examples`,
+chat_note:`Demo: chats are not private yet.`,example_chat:`This is an example, no reply will come.`,
+your_listings:`Your listings`,your_posts:`Your posts`,delete:`Delete`,confirm:`Tap to confirm`,
+ask_price:`Ask for price`,back:`Back`,loading:`Loading…`,
+no_db:`Could not connect to the database.`,no_id:`Sign in to use the app.`,
+listings:`Listings`,posts:`Posts`,message:`Message`,all_routes:`All routes`,language:`Language`,
+now:`now`,ago_m:`{n}m ago`,ago_h:`{n}h ago`,ago_d:`{n}d ago`,
+reefer:`Reefer`,tent:`Tent`,container:`Container`,flatbed:`Flatbed`,other:`Other`,
+sample_hint:`Examples show the app with some activity.`,version:`Test version`}
+};
+Object.assign(T.uz,{email:`Email`,password:`Parol`,sign_in:`Kirish`,sign_up:`Ro'yxatdan o'tish`,have_account:`Akkauntim bor, kirish`,no_account:`Akkaunt yo'q, ro'yxatdan o'tish`,sign_out:`Chiqish`,auth_fail:`Kirib bo'lmadi`,confirm_email:`Emailingizga yuborilgan havolani bosing, keyin kiring.`,no_config:`Ilova hali sozlanmagan.`,auth_title:`Alpa Lines'ga kiring`,auth_sub:`Tashuvchilar va yuk egalarining tarmog'i.`});
+Object.assign(T.ru,{email:`Email`,password:`Пароль`,sign_in:`Войти`,sign_up:`Зарегистрироваться`,have_account:`У меня есть аккаунт, войти`,no_account:`Нет аккаунта, зарегистрироваться`,sign_out:`Выйти`,auth_fail:`Не удалось войти`,confirm_email:`Перейдите по ссылке из письма, затем войдите.`,no_config:`Приложение ещё не настроено.`,auth_title:`Войдите в Alpa Lines`,auth_sub:`Сеть перевозчиков и грузоотправителей.`});
+Object.assign(T.en,{email:`Email`,password:`Password`,sign_in:`Sign in`,sign_up:`Create account`,have_account:`I have an account, sign in`,no_account:`No account yet, create one`,sign_out:`Sign out`,auth_fail:`Could not sign in`,confirm_email:`Open the link we emailed you, then sign in.`,no_config:`The app is not configured yet.`,auth_title:`Sign in to Alpa Lines`,auth_sub:`A network for carriers and shippers.`});
+var CITIES={
+tashkent:{uz:`Toshkent`,ru:`Ташкент`,en:`Tashkent`},samarkand:{uz:`Samarqand`,ru:`Самарканд`,en:`Samarkand`},
+bukhara:{uz:`Buxoro`,ru:`Бухара`,en:`Bukhara`},fergana:{uz:`Farg'ona`,ru:`Фергана`,en:`Fergana`},
+andijan:{uz:`Andijon`,ru:`Андижан`,en:`Andijan`},namangan:{uz:`Namangan`,ru:`Наманган`,en:`Namangan`},
+navoi:{uz:`Navoiy`,ru:`Навои`,en:`Navoi`},nukus:{uz:`Nukus`,ru:`Нукус`,en:`Nukus`},
+almaty:{uz:`Olmaota`,ru:`Алматы`,en:`Almaty`},astana:{uz:`Ostona`,ru:`Астана`,en:`Astana`},
+shymkent:{uz:`Shymkent`,ru:`Шымкент`,en:`Shymkent`},bishkek:{uz:`Bishkek`,ru:`Бишкек`,en:`Bishkek`},
+osh:{uz:`O'sh`,ru:`Ош`,en:`Osh`},dushanbe:{uz:`Dushanbe`,ru:`Душанбе`,en:`Dushanbe`},
+khujand:{uz:`Xo'jand`,ru:`Худжанд`,en:`Khujand`},ashgabat:{uz:`Ashgabat`,ru:`Ашхабад`,en:`Ashgabat`},
+moscow:{uz:`Moskva`,ru:`Москва`,en:`Moscow`},istanbul:{uz:`Istanbul`,ru:`Стамбул`,en:`Istanbul`},
+urumqi:{uz:`Urumchi`,ru:`Урумчи`,en:`Urumqi`}};
+var TRUCKS=['reefer','tent','container','flatbed','other'];
+var TYPES=['carrier','shipper','manufacturer'];
+
+
+Object.assign(T.uz,{verified:`Tasdiqlangan`,sheet_title:`Nima joylaymiz?`,update_lbl:`Yangilik yozish`,st_loads:`E'lonlar`,st_posts:`Postlar`,st_since:`A'zo bo'lgan`,pro_card:`Alpa Lines Pro`,pro_card_d:`Ko'proq yuk, ko'proq ishonch`,soon:`Tez orada`,pro_head:`Ko'proq yuk toping. Ko'proq ishonch qozoning.`,pro_sub:`Har hafta Markaziy Osiyo bo'ylab tashiydigan tashuvchilar va ishlab chiqaruvchilar uchun.`,plan_free:`Bepul`,free_f1:`Profil, lenta va chat`,free_f2:`Kuniga 5 ta yuk bilan bog'lanish`,popular:`ENG MASHHUR`,month:`oy`,pro_f1:`Yuk va mashinalar bilan cheksiz bog'lanish`,pro_f2:`Yo'nalishlaringiz uchun Telegram va push xabarlar`,pro_f3:`Postlaringiz lentada yuqoriroq chiqadi`,pro_f4:`Tasdiqlangan belgisi kiritilgan`,waitlist_btn:`Kutish ro'yxatiga yozilish`,waitlist_done:`Siz ro'yxatdasiz. Birinchi bo'lib xabar beramiz.`,pro_year:`yoki yiliga $290, 2 oy bepul`,boost_t:`Postni ko'tarish`,boost_d:`Yuk yoki mashinani 3 kun davomida yo'nalishingizdagi ko'proq kompaniyalarga ko'rsating.`,waitlist_note:`To'lov hali yoqilmagan. Narxlar o'zgarishi mumkin.`});
+Object.assign(T.ru,{verified:`Проверено`,sheet_title:`Что разместить?`,update_lbl:`Написать новость`,st_loads:`Объявления`,st_posts:`Посты`,st_since:`В сети с`,pro_card:`Alpa Lines Pro`,pro_card_d:`Больше грузов, больше доверия`,soon:`Скоро`,pro_head:`Находите больше грузов. Получайте больше доверия.`,pro_sub:`Для перевозчиков и производителей, которые каждую неделю возят грузы по Центральной Азии.`,plan_free:`Бесплатно`,free_f1:`Профиль, лента и чат`,free_f2:`5 контактов по грузам в день`,popular:`ПОПУЛЯРНЫЙ`,month:`мес.`,pro_f1:`Безлимитные контакты по грузам и машинам`,pro_f2:`Мгновенные уведомления в Telegram и push по вашим маршрутам`,pro_f3:`Ваши посты выше в ленте`,pro_f4:`Значок «Проверено» включён`,waitlist_btn:`Встать в список ожидания`,waitlist_done:`Вы в списке. Сообщим первыми.`,pro_year:`или $290 в год, 2 месяца бесплатно`,boost_t:`Продвинуть пост`,boost_d:`Покажите груз или машину большему числу компаний на вашем направлении на 3 дня.`,waitlist_note:`Оплата пока не включена. Цены могут измениться.`});
+Object.assign(T.en,{verified:`Verified`,sheet_title:`What do you want to post?`,update_lbl:`Write an update`,st_loads:`Listings`,st_posts:`Posts`,st_since:`Member since`,pro_card:`Alpa Lines Pro`,pro_card_d:`More loads, more trust`,soon:`Soon`,pro_head:`Find more loads. Win more trust.`,pro_sub:`For carriers and manufacturers who ship across Central Asia every week.`,plan_free:`Free`,free_f1:`Profile, feed and chat`,free_f2:`5 load contacts per day`,popular:`MOST POPULAR`,month:`month`,pro_f1:`Unlimited contacts on loads and trucks`,pro_f2:`Instant Telegram and push alerts for your routes`,pro_f3:`Your posts ranked higher in the feed`,pro_f4:`Verified badge included`,waitlist_btn:`Join the waitlist`,waitlist_done:`You are on the list. We will tell you first.`,pro_year:`or $290 / year, 2 months free`,boost_t:`Boost a post`,boost_d:`Put a load or truck in front of more companies on your corridor for 3 days.`,waitlist_note:`Payments are not switched on yet. Prices may change.`});
+
+(function(){'use strict';
+/* ---------- state ---------- */
+var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+var saved=LS.get('alpa-lang');
+var S={lang:(saved==='ru'||saved==='en'||saved==='uz')?saved:'uz',view:{name:'home'},stack:[],
+companies:{},posts:[],loads:[],chats:[],msgs:[],kind:'cargo',fromF:'',toF:'',
+loaded:{companies:false,posts:false,loads:false,chats:false},error:'',uid:null,authReady:false,authMode:'in',allMsgs:[],confirmDel:'',sheet:false,pro:false};
+var $app=document.getElementById('app');
+var STABLE=['compose-load','compose-post','setup','chat','auth'];
+
+function t(k){return (T[S.lang]&&T[S.lang][k])||T.en[k]||k}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function cityName(k){return CITIES[k]?CITIES[k][S.lang]:(k||'')}
+function truckName(k){return t(TRUCKS.indexOf(k)>=0?k:'other')}
+function myCo(){return S.uid?S.companies[S.uid]||null:null}
+function co(id){return S.companies[id]||null}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+var UZM=['yan','fev','mar','apr','may','iyn','iyl','avg','sen','okt','noy','dek'];
+function fmtDate(iso){try{var d=new Date(iso+'T00:00:00');if(S.lang==='uz')return d.getDate()+' '+UZM[d.getMonth()];return d.toLocaleDateString(S.lang==='uz'?'uz-Latn-UZ':S.lang==='ru'?'ru-RU':'en-GB',{day:'numeric',month:'short'})}catch(e){return iso||''}}
+function ago(ts){var m=Math.max(0,Math.round((Date.now()-ts)/60000));if(m<1)return t('now');
+if(m<60)return t('ago_m').replace('{n}',m);var h=Math.round(m/60);if(h<24)return t('ago_h').replace('{n}',h);return t('ago_d').replace('{n}',Math.round(h/24))}
+function clock(ts){var d=new Date(ts);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+
+/* ---------- icons ---------- */
+function svg(p,s,extra){return '<svg width="'+(s||22)+'" height="'+(s||22)+'" viewBox="0 0 24 24" fill="'+((extra&&extra.fill)||'none')+'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'}
+var ic={
+home:svg('<path d="M4 11l8-7 8 7v9H4z"/>',24),
+truck:svg('<path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.500" r="1.600"/><circle cx="17" cy="17.500" r="1.600"/>',24),
+chat:svg('<path d="M4 5h16v11H9l-5 4z"/>',24),
+user:svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',24),
+back:svg('<path d="M15 5l-7 7 7 7"/>',22),
+arrow:svg('<path d="M4 12h16M14 6l6 6-6 6"/>',18),
+plus:svg('<path d="M12 5v14M5 12h14"/>',18),
+plus24:svg('<path d="M12 5v14M5 12h14"/>',26),
+send:svg('<path d="M4 12l16-8-6 16-3-6.500z"/>',20),
+heart:svg('<path d="M12 20s-7-4.400-7-10a4 4 0 0 1 7-2.600A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/>',20),
+heartOn:svg('<path d="M12 20s-7-4.400-7-10a4 4 0 0 1 7-2.600A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/>',20,{fill:'currentColor'}),
+logo:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20L12 4l7 16"/><path d="M8.500 14.500h7" stroke="#F2A33A"/></svg>'
+};
+
+function av(name,size){var s=String(name||'?'),h=0,i;for(i=0;i<s.length;i++)h+=s.charCodeAt(i);
+var ini=s.trim().split(/\s+/).slice(0,2).map(function(w){return w.charAt(0)}).join('').toUpperCase();
+return '<span class="av av'+(h%5)+'" style="width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*.36)+'px" aria-hidden="true">'+esc(ini||'?')+'</span>'}
+
+function vb(c){return c&&c.verified?'<svg class="vb" width="15" height="15" viewBox="0 0 24 24" role="img" aria-label="'+esc(t('verified'))+'"><circle cx="12" cy="12" r="11" fill="#0B7A75"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+function since(ts){if(!ts)return '—';var d=new Date(ts);if(S.lang==='uz')return UZM[d.getMonth()]+' '+d.getFullYear();return d.toLocaleDateString(S.lang==='ru'?'ru-RU':'en-GB',{month:'short',year:'numeric'})}
+function stories(){var ids=Object.keys(S.companies);if(!ids.length)return '';var now=Date.now(),recent={};
+S.posts.forEach(function(p){if(now-p.createdAt<259200000)recent[p.ownerId]=true});
+ids.sort(function(x,y){return (recent[y]?1:0)-(recent[x]?1:0)||S.companies[y].createdAt-S.companies[x].createdAt});
+return '<div class="stories" role="list">'+ids.slice(0,15).map(function(id){var c=S.companies[id],nm=c.name.length>12?c.name.slice(0,11)+'…':c.name;
+return '<button class="st" role="listitem" data-act="company" data-id="'+esc(id)+'"><span class="ring'+(recent[id]?' on':'')+'">'+av(c.name,50)+'</span><span class="stn">'+esc(nm)+'</span></button>'}).join('')+'</div>'}
+function check(txt){return '<li>'+svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>',18)+'<span>'+esc(txt)+'</span></li>'}
+function sheetHtml(){return '<div class="scrim" data-act="sheet-close"></div><div class="sheet" role="dialog" aria-label="'+esc(t('sheet_title'))+'"><h2>'+esc(t('sheet_title'))+'</h2>'
++'<button class="btn block" data-act="new-cargo">'+esc(t('post_cargo'))+'</button><button class="btn block soft" data-act="new-truck">'+esc(t('post_truck'))+'</button><button class="btn block ghost" data-act="newpost">'+esc(t('update_lbl'))+'</button><button class="btn block plain" data-act="sheet-close">'+esc(t('cancel'))+'</button></div>'}
+
+/* ---------- view builders ---------- */
+function barMain(){var b=['uz','ru','en'].map(function(l){return '<button class="lg'+(S.lang===l?' on':'')+'" data-act="lang" data-v="'+l+'" aria-pressed="'+(S.lang===l)+'">'+l.toUpperCase()+'</button>'}).join('');
+return '<header class="bar"><div class="in"><div class="brand"><span class="logo">'+ic.logo+'</span><span>Alpa Lines</span></div><div class="langs" role="group" aria-label="'+esc(t('language'))+'">'+b+'</div></div></header>'}
+function barSub(title,left){return '<header class="bar"><div class="in"><button class="icon" data-act="back" aria-label="'+esc(t('back'))+'">'+ic.back+'</button>'+(left||'')+'<h1 class="ttl">'+esc(title)+'</h1></div></header>'}
+function tabsBar(cur){var items=[['home',ic.home,'tab_home'],['loads',ic.truck,'tab_loads'],['plus'],['chats',ic.chat,'tab_chats'],['profile',ic.user,'tab_profile']];
+return '<nav class="tabs" aria-label="Menu"><div class="in">'+items.map(function(x){if(x[0]==='plus')return '<button class="fab" data-act="plus" aria-label="'+esc(t('sheet_title'))+'">'+ic.plus24+'</button>';
+return '<button class="tab'+(cur===x[0]?' on':'')+'" data-act="tab" data-v="'+x[0]+'"'+(cur===x[0]?' aria-current="page"':'')+'>'+x[1]+'<span>'+esc(t(x[2]))+'</span></button>'}).join('')+'</div></nav>'}
+function shell(bar,body,foot){return bar+'<main class="wrap">'+body+'</main>'+(foot||'')}
+
+function citySelect(id,val,anyLabel,cls,chg){var o=anyLabel?'<option value="">'+esc(anyLabel)+'</option>':'<option value="" disabled'+(val?'':' selected')+'></option>';
+Object.keys(CITIES).forEach(function(k){o+='<option value="'+k+'"'+(val===k?' selected':'')+'>'+esc(cityName(k))+'</option>'});
+return '<select id="'+id+'" class="'+(cls||'')+'"'+(chg?' data-chg="'+chg+'"':'')+'>'+o+'</select>'}
+
+function owner(c,ownerId,extra){var name=c?c.name:'—';
+return '<div class="head"><button class="who" data-act="company" data-id="'+esc(ownerId)+'">'+av(name,36)+'<span><span class="nm">'+esc(name)+vb(c)+'</span><span class="sub">'+esc(c?t(c.type)+' · '+cityName(c.city):'')+'</span></span></button>'+(extra||'')+'</div>'}
+
+function loadCard(l){var c=co(l.ownerId),mine=l.ownerId===S.uid,btn;
+if(mine)btn=delBtn('del-load',l.id);
+else if(l.demo)btn='<span class="chip amber">'+esc(t('example'))+'</span>';
+else btn='<button class="btn" data-act="contact" data-id="'+esc(l.ownerId)+'">'+esc(t('contact'))+'</button>';
+var chips='<span class="chip teal">'+esc(fmtDate(l.date))+'</span><span class="chip">'+esc(truckName(l.truckType))+'</span>'+(l.weight?'<span class="chip">'+esc(l.weight)+' t</span>':'');
+var price=l.price?'<div class="price">$'+esc(Number(l.price).toLocaleString('en-US'))+'<small>USD</small></div>':'<div class="muted" style="font-size:12px;font-weight:600;text-align:right">'+esc(t('ask_price'))+'</div>';
+return '<article class="card"><div class="top"><div class="route"><span>'+esc(cityName(l.from))+'</span>'+ic.arrow+'<span>'+esc(cityName(l.to))+'</span></div>'+price+'</div>'
++'<div class="chips">'+chips+'</div>'+(l.cargo?'<p class="txt">'+esc(l.cargo)+'</p>':'')+owner(c,l.ownerId,btn)+'</article>'}
+
+function delBtn(act,id){var on=S.confirmDel===act+id;return '<button class="btn danger" data-act="'+act+'" data-id="'+esc(id)+'">'+esc(on?t('confirm'):t('delete'))+'</button>'}
+
+function kindChip(k){if(k==='truck')return '<span class="chip teal">'+esc(t('kind_truck'))+'</span>';if(k==='cargo')return '<span class="chip amber">'+esc(t('kind_cargo'))+'</span>';return ''}
+function postCard(p){var c=co(p.ownerId),mine=p.ownerId===S.uid,likes=p.likes||{},n=0,k;for(k in likes)if(likes[k])n++;
+var liked=!!(S.uid&&likes[S.uid]);
+var acts='<button class="'+(liked?'liked':'')+'" data-act="like" data-id="'+esc(p.id)+'" aria-pressed="'+liked+'" aria-label="Like">'+(liked?ic.heartOn:ic.heart)+'<span>'+n+'</span></button>';
+if(!mine&&!p.demo)acts+='<button data-act="contact" data-id="'+esc(p.ownerId)+'">'+ic.chat.replace(/width="24" height="24"/,'width="20" height="20"')+'<span>'+esc(t('message'))+'</span></button>';
+acts+='<span class="sp"></span>';
+if(p.demo)acts+='<span class="chip amber">'+esc(t('example'))+'</span>';
+if(mine)acts+=delBtn('del-post',p.id);
+return '<article class="card"><div class="head">'+'<button class="who" data-act="company" data-id="'+esc(p.ownerId)+'">'+av(c?c.name:'?',40)+'<span><span class="nm">'+esc(c?c.name:'—')+(c?vb(c):'')+'</span><span class="sub">'+esc(c?t(c.type)+' · '+cityName(c.city):'')+' · '+esc(ago(p.createdAt))+'</span></span></button>'+kindChip(p.kind)+'</div>'
++'<p class="txt">'+esc(p.text)+'</p><div class="act">'+acts+'</div></article>'}
+
+function empty(text,btn){return '<div class="empty"><p>'+esc(text)+'</p>'+(btn||'')+'</div>'}
+function loading(){return '<div class="sk"></div><div class="sk"></div>'}
+function createBanner(){return '<div class="banner"><span>'+esc(t('create_banner'))+'</span><button class="btn" data-act="setup">'+esc(t('create_btn'))+'</button></div>'}
+
+function viewHome(){var h='',me=myCo();
+if(S.loaded.companies)h+=stories();
+if(S.loaded.companies){h+=me?'<button class="teaser" data-act="newpost">'+av(me.name,36)+'<span>'+esc(t('share_prompt'))+'</span></button>':createBanner()}
+if(!S.loaded.posts)h+=loading();else if(!S.posts.length)h+=empty(t('no_posts'));else h+=S.posts.map(postCard).join('');
+return shell(barMain(),h,tabsBar('home'))}
+
+function viewLoads(){var kind=S.kind,td=todayISO();
+var list=S.loads.filter(function(l){return l.kind===kind&&(!S.fromF||l.from===S.fromF)&&(!S.toF||l.to===S.toF)&&(l.date>=td||l.ownerId===S.uid)});
+var h='<div class="seg" role="group"><button data-act="kind" data-v="cargo" class="'+(kind==='cargo'?'on':'')+'" aria-pressed="'+(kind==='cargo')+'">'+esc(t('cargo_tab'))+'</button><button data-act="kind" data-v="truck" class="'+(kind==='truck'?'on':'')+'" aria-pressed="'+(kind==='truck')+'">'+esc(t('trucks_tab'))+'</button></div>';
+h+='<div class="grid2"><div class="field"><label for="fFrom">'+esc(t('from'))+'</label>'+citySelect('fFrom',S.fromF,t('any'),'sel','from')+'</div><div class="field"><label for="fTo">'+esc(t('to'))+'</label>'+citySelect('fTo',S.toF,t('any'),'sel','to')+'</div></div>';
+h+='<button class="btn block" data-act="newload">'+ic.plus+'<span>'+esc(t(kind==='cargo'?'post_cargo':'post_truck'))+'</span></button>';
+if(!S.loaded.loads)h+=loading();else if(!list.length)h+=empty(t('no_loads'));else h+=list.map(loadCard).join('');
+return shell(barMain(),h,tabsBar('loads'))}
+
+function viewChats(){var h;
+if(!S.loaded.chats)h=loading();else if(!S.chats.length)h=empty(t('no_chats'));
+else h=S.chats.map(function(c){var other=c.members.filter(function(m){return m!==S.uid})[0],oc=co(other);
+return '<button class="chatrow" data-act="open-chat" data-id="'+esc(other)+'">'+av(oc?oc.name:'?',44)+'<span class="mid"><span class="nm">'+esc(oc?oc.name:'—')+'</span><span class="ls">'+esc((c.lastFrom===S.uid?'↩ ':'')+c.lastText)+'</span></span><span class="muted" style="font-size:12px">'+esc(ago(c.lastAt))+'</span></button>'}).join('');
+return shell(barMain(),h,tabsBar('chats'))}
+
+function coCard(c,id,mine){var phone=c.phone?'<p>'+esc(c.phone)+'</p>':'',nl=S.loads.filter(function(l){return l.ownerId===id}).length,np=S.posts.filter(function(p){return p.ownerId===id}).length,
+stats='<div class="stats"><div><b>'+nl+'</b><span>'+esc(t('st_loads'))+'</span></div><div><b>'+np+'</b><span>'+esc(t('st_posts'))+'</span></div><div><b>'+esc(since(c.createdAt))+'</b><span>'+esc(t('st_since'))+'</span></div></div>';
+return '<section class="card"><div class="head">'+av(c.name,56)+'<div style="min-width:0"><h2 style="font-size:19px;font-weight:800;letter-spacing:-.3px;overflow-wrap:anywhere">'+esc(c.name)+' '+vb(c)+'</h2><p class="muted">'+esc(t(c.type)+' · '+cityName(c.city))+'</p></div></div>'
++stats+phone+(c.about?'<p class="txt">'+esc(c.about)+'</p>':'')
++(c.demo?'<span class="chip amber" style="align-self:flex-start">'+esc(t('example'))+'</span>':'')
++(mine?'<button class="btn ghost" data-act="setup" style="align-self:flex-start">'+esc(t('edit'))+'</button>':(c.demo?'':'<button class="btn" data-act="contact" data-id="'+esc(id)+'" style="align-self:flex-start">'+esc(t('message'))+'</button>'))+'</section>'}
+
+function listingsOf(id,mine){var td=todayISO();
+var ls=S.loads.filter(function(l){return l.ownerId===id&&(mine||l.date>=td)}),ps=S.posts.filter(function(p){return p.ownerId===id}),h='';
+if(ls.length)h+='<h2 class="sec">'+esc(t(mine?'your_listings':'listings'))+'</h2>'+ls.map(loadCard).join('');
+if(ps.length)h+='<h2 class="sec">'+esc(t(mine?'your_posts':'posts'))+'</h2>'+ps.map(postCard).join('');
+return h}
+
+function viewProfile(){var me=myCo(),h='';
+if(!S.loaded.companies)h=loading();
+else if(!me)h=createBanner();
+else h=coCard(me,S.uid,true)+listingsOf(S.uid,true);
+h+='<button class="proCard" data-act="pro"><span><b>'+esc(t('pro_card'))+'</b><span class="muted">'+esc(t('pro_card_d'))+'</span></span>'+ic.arrow+'</button>';
+h+='<button class="btn danger block" data-act="sign-out">'+esc(t('sign_out'))+'</button>';
+h+='<p class="note">Alpa Lines · '+esc(t('version'))+'</p>';
+return shell(barMain(),h,tabsBar('profile'))}
+
+function viewCompany(){var id=S.view.id,c=co(id);
+if(!c)return shell(barSub(''),empty('—'));
+return shell(barSub(c.name),coCard(c,id,id===S.uid)+listingsOf(id,id===S.uid))}
+
+function viewSetup(){var me=myCo()||{};
+var opts=TYPES.map(function(k){return '<option value="'+k+'"'+((me.type||'carrier')===k?' selected':'')+'>'+esc(t(k))+'</option>'}).join('');
+var h='<div><h2 style="font-size:22px;font-weight:800;letter-spacing:-.4px">'+esc(t('setup_title'))+'</h2><p class="muted">'+esc(t('setup_sub'))+'</p></div>'
++'<div class="field"><label for="cName">'+esc(t('company_name'))+' *</label><input id="cName" maxlength="80" autocomplete="organization" value="'+esc(me.name||'')+'"></div>'
++'<div class="grid2"><div class="field"><label for="cType">'+esc(t('company_type'))+'</label><select id="cType">'+opts+'</select></div>'
++'<div class="field"><label for="cCity">'+esc(t('city'))+' *</label>'+citySelect('cCity',me.city||'')+'</div></div>'
++'<div class="field"><label for="cPhone">'+esc(t('phone'))+' ('+esc(t('optional'))+')</label><input id="cPhone" type="tel" maxlength="30" autocomplete="tel" value="'+esc(me.phone||'')+'" placeholder="+998 90 123 45 67"></div>'
++'<div class="field"><label for="cAbout">'+esc(t('about'))+' ('+esc(t('optional'))+')</label><textarea id="cAbout" maxlength="500">'+esc(me.about||'')+'</textarea></div>'
++'<p class="err" id="formErr" role="alert"></p>'
++'<div class="row"><button class="btn ghost" data-act="back">'+esc(t('cancel'))+'</button><button class="btn" data-act="save-company">'+esc(t('save'))+'</button></div>';
+return shell(barSub(t('tab_profile')),h)}
+
+function viewPro(){var h='<section class="proHead"><div class="proTag"><span class="logo">'+ic.logo+'</span><b>ALPA LINES PRO</b><span class="chip amber">'+esc(t('soon'))+'</span></div><h2>'+esc(t('pro_head'))+'</h2><p>'+esc(t('pro_sub'))+'</p></section>'
++'<section class="card"><div class="row"><h3>'+esc(t('plan_free'))+'</h3><b class="muted">$0</b></div><ul class="ck muted">'+check(t('free_f1'))+check(t('free_f2'))+'</ul></section>'
++'<section class="card pro"><span class="pop">'+esc(t('popular'))+'</span><div class="row"><h3>Pro</h3><div class="price">$29 <span class="muted" style="font-size:13px;font-weight:600">/ '+esc(t('month'))+'</span></div></div>'
++'<ul class="ck">'+check(t('pro_f1'))+check(t('pro_f2'))+check(t('pro_f3'))+check(t('pro_f4'))+'</ul>'
++(S.pro?'<p class="chip teal" style="align-self:flex-start">'+esc(t('waitlist_done'))+'</p>':'<button class="btn block" data-act="join-pro">'+esc(t('waitlist_btn'))+'</button>')
++'<p class="note">'+esc(t('pro_year'))+'</p><p class="err" id="formErr" role="alert"></p></section>'
++'<section class="card"><div class="row" style="flex-wrap:nowrap"><div><h3>'+esc(t('boost_t'))+'</h3><p class="muted" style="font-size:13px">'+esc(t('boost_d'))+'</p></div><b class="price">$5</b></div></section>'
++'<p class="note">'+esc(t('waitlist_note'))+'</p>';
+return shell(barSub('Pro'),h)}
+
+function viewComposeLoad(){var k=S.view.kind||'cargo';
+var tr=TRUCKS.map(function(x){return '<option value="'+x+'">'+esc(t(x))+'</option>'}).join('');
+var h='<div class="seg" role="group"><button data-act="form-kind" data-v="cargo" id="kc" class="'+(k==='cargo'?'on':'')+'">'+esc(t('post_cargo'))+'</button><button data-act="form-kind" data-v="truck" id="kt" class="'+(k==='truck'?'on':'')+'">'+esc(t('post_truck'))+'</button></div>'
++'<div class="grid2"><div class="field"><label for="lFrom">'+esc(t('from'))+' *</label>'+citySelect('lFrom','')+'</div><div class="field"><label for="lTo">'+esc(t('to'))+' *</label>'+citySelect('lTo','')+'</div></div>'
++'<div class="grid2"><div class="field"><label for="lDate">'+esc(t('date'))+' *</label><input id="lDate" type="date" min="'+todayISO()+'" value="'+todayISO()+'"></div><div class="field"><label for="lTruck">'+esc(t('truck_type'))+'</label><select id="lTruck">'+tr+'</select></div></div>'
++'<div class="grid2"><div class="field"><label for="lWeight">'+esc(t('weight'))+' ('+esc(t('optional'))+')</label><input id="lWeight" type="number" inputmode="decimal" min="0" step="0.1"></div><div class="field"><label for="lPrice">'+esc(t('price'))+' ('+esc(t('optional'))+')</label><input id="lPrice" type="number" inputmode="numeric" min="0" step="10"></div></div>'
++'<div class="field"><label for="lCargo">'+esc(t('cargo_name'))+' / '+esc(t('note'))+' ('+esc(t('optional'))+')</label><textarea id="lCargo" maxlength="300" style="min-height:80px"></textarea></div>'
++'<p class="err" id="formErr" role="alert"></p>'
++'<div class="row"><button class="btn ghost" data-act="back">'+esc(t('cancel'))+'</button><button class="btn" data-act="publish-load">'+esc(t('publish'))+'</button></div>';
+return shell(barSub(t(k==='cargo'?'post_cargo':'post_truck')),h)}
+
+function viewComposePost(){
+var h='<div class="field"><label for="pKind">'+esc(t('kind_news'))+'</label><select id="pKind"><option value="news">'+esc(t('kind_news'))+'</option><option value="truck">'+esc(t('kind_truck'))+'</option><option value="cargo">'+esc(t('kind_cargo'))+'</option></select></div>'
++'<div class="field"><textarea id="pText" maxlength="1000" placeholder="'+esc(t('share_prompt'))+'" aria-label="'+esc(t('share_prompt'))+'"></textarea></div>'
++'<p class="err" id="formErr" role="alert"></p>'
++'<div class="row"><button class="btn ghost" data-act="back">'+esc(t('cancel'))+'</button><button class="btn" data-act="publish-post">'+esc(t('share'))+'</button></div>';
+return shell(barSub(t('tab_home')),h)}
+
+function viewChat(){var v=S.view,oc=co(v.other),name=oc?oc.name:'—';
+var bar=barSub(name,'<span style="margin-right:8px">'+av(name,34)+'</span>');
+var body='<p class="note">'+esc(t(oc&&oc.demo?'example_chat':'chat_note'))+'</p><div class="msgs" id="msgs"></div>';
+var foot='<div class="inputbar"><div class="in"><form id="msgForm" autocomplete="off"><input id="msgInput" aria-label="'+esc(t('write_msg'))+'" placeholder="'+esc(t('write_msg'))+'" maxlength="2000"><button class="send" type="submit" aria-label="'+esc(t('send'))+'">'+ic.send+'</button></form></div></div>';
+return shell(bar,body,foot)}
+
+/* ---------- render ---------- */
+function viewAuth(){var up=S.authMode==='up';
+var h='<div style="padding-top:12px"><h2 style="font-size:24px;font-weight:800;letter-spacing:-.5px">'+esc(t('auth_title'))+'</h2><p class="muted">'+esc(t('auth_sub'))+'</p></div>'
++'<form id="authForm" class="card" autocomplete="on"><div class="field"><label for="aEmail">'+esc(t('email'))+'</label><input id="aEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" required></div>'
++'<div class="field"><label for="aPass">'+esc(t('password'))+'</label><input id="aPass" type="password" autocomplete="'+(up?'new-password':'current-password')+'" minlength="6" required></div>'
++'<p class="err" id="formErr" role="alert"></p><button class="btn block" type="submit">'+esc(t(up?'sign_up':'sign_in'))+'</button>'
++'<button class="btn ghost block" type="button" data-act="auth-mode">'+esc(t(up?'have_account':'no_account'))+'</button></form>';
+return shell(barMain(),h)}
+
+function render(force){
+if(!force&&STABLE.indexOf(S.view.name)>=0)return;
+var html;
+if(S.error)html=shell(barMain(),empty(t(S.error)));
+else if(!S.authReady)html=shell(barMain(),loading());
+else if(!S.uid)html=viewAuth();
+else{switch(S.view.name){
+case 'loads':html=viewLoads();break;case 'chats':html=viewChats();break;case 'profile':html=viewProfile();break;
+case 'company':html=viewCompany();break;case 'setup':html=viewSetup();break;case 'compose-load':html=viewComposeLoad();break;
+case 'compose-post':html=viewComposePost();break;case 'chat':html=viewChat();break;case 'pro':html=viewPro();break;default:html=viewHome()}
+if(S.sheet)html+=sheetHtml()}
+$app.innerHTML=html;
+if(S.uid&&S.view.name==='chat')paintMsgs();
+}
+
+function pairMsgs(){var o=S.view.other,u=S.uid;return S.allMsgs.filter(function(m){return (m.from===u&&m.to===o)||(m.from===o&&m.to===u)})}
+function paintMsgs(){var el=document.getElementById('msgs');if(!el)return;
+el.innerHTML=pairMsgs().map(function(m){var out=m.from===S.uid;return '<div class="b '+(out?'out':'in-')+'">'+esc(m.text)+'<time>'+esc(clock(m.at))+'</time></div>'}).join('');
+window.scrollTo(0,document.body.scrollHeight)}
+
+/* ---------- navigation ---------- */
+function goTab(n){S.stack=[];S.confirmDel='';S.sheet=false;S.view={name:n};render(true);window.scrollTo(0,0)}
+function push(v){S.stack.push(S.view);S.view=v;S.confirmDel='';S.sheet=false;render(true);window.scrollTo(0,0)}
+function back(){S.view=S.stack.pop()||{name:'home'};S.confirmDel='';S.sheet=false;render(true);window.scrollTo(0,0)}
+function needCompany(){if(myCo())return false;push({name:'setup'});return true}
+function openChat(other){if(!S.uid||other===S.uid)return;if(needCompany())return;push({name:'chat',other:other})}
+
+/* ---------- data (Supabase) ---------- */
+var sb=null,chan=null,timers={};
+function later(k,fn){clearTimeout(timers[k]);timers[k]=setTimeout(fn,250)}
+function done(name){S.loaded[name]=true;render()}
+function loadCompanies(){return sb.from('companies').select('*').then(function(r){
+if(r.error){console.warn(r.error);return done('companies')}
+var o={};r.data.forEach(function(c){o[c.id]={name:c.name,type:c.type,city:c.city,phone:c.phone||'',about:c.about||'',verified:!!c.verified,createdAt:Date.parse(c.created_at)}});S.companies=o;done('companies')})}
+function loadPosts(){return sb.from('posts').select('*, post_likes(user_id)').order('created_at',{ascending:false}).limit(60).then(function(r){
+if(r.error){console.warn(r.error);return done('posts')}
+S.posts=r.data.map(function(p){var likes={};(p.post_likes||[]).forEach(function(x){likes[x.user_id]=true});return {id:p.id,ownerId:p.owner,kind:p.kind,text:p.text,createdAt:Date.parse(p.created_at),likes:likes}});done('posts')})}
+function loadLoads(){return sb.from('loads').select('*').order('created_at',{ascending:false}).limit(150).then(function(r){
+if(r.error){console.warn(r.error);return done('loads')}
+S.loads=r.data.map(function(l){return {id:l.id,ownerId:l.owner,kind:l.kind,from:l.from_city,to:l.to_city,date:l.load_date,truckType:l.truck_type,weight:l.weight,price:l.price,cargo:l.cargo,createdAt:Date.parse(l.created_at)}});done('loads')})}
+function deriveChats(){var m={};S.allMsgs.forEach(function(x){var o=x.from===S.uid?x.to:x.from,c=m[o];if(!c||x.at>=c.lastAt)m[o]={id:o,members:[S.uid,o],lastText:x.text,lastAt:x.at,lastFrom:x.from}});
+return Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return b.lastAt-a.lastAt})}
+function loadMsgs(){return sb.from('messages').select('*').or('sender.eq.'+S.uid+',recipient.eq.'+S.uid).order('created_at',{ascending:true}).limit(1000).then(function(r){
+if(r.error){console.warn(r.error);return done('chats')}
+S.allMsgs=r.data.map(function(x){return {id:x.id,from:x.sender,to:x.recipient,text:x.text,at:Date.parse(x.created_at)}});S.chats=deriveChats();
+if(S.view.name==='chat')paintMsgs();done('chats')})}
+
+function loadPro(){return sb.from('pro_waitlist').select('user_id').eq('user_id',S.uid).then(function(r){if(r.error){console.warn(r.error);return}S.pro=!!(r.data&&r.data.length);if(S.view.name==='pro')render(true)})}
+function joinPro(){sb.from('pro_waitlist').insert({user_id:S.uid,plan:'pro'}).then(function(r){if(r.error&&r.error.code!=='23505'){failMsg(r.error);return}S.pro=true;render(true)})}
+
+function startData(){
+loadCompanies();loadPosts();loadLoads();loadMsgs();loadPro();
+chan=sb.channel('alpa')
+.on('postgres_changes',{event:'*',schema:'public',table:'companies'},function(){later('c',loadCompanies)})
+.on('postgres_changes',{event:'*',schema:'public',table:'posts'},function(){later('p',loadPosts)})
+.on('postgres_changes',{event:'*',schema:'public',table:'post_likes'},function(){later('p',loadPosts)})
+.on('postgres_changes',{event:'*',schema:'public',table:'loads'},function(){later('l',loadLoads)})
+.on('postgres_changes',{event:'*',schema:'public',table:'messages'},function(){later('m',loadMsgs)})
+.subscribe()}
+function stopData(){if(chan){try{sb.removeChannel(chan)}catch(e){}chan=null}
+S.companies={};S.posts=[];S.loads=[];S.allMsgs=[];S.chats=[];S.pro=false;S.sheet=false;S.loaded={companies:false,posts:false,loads:false,chats:false}}
+
+function setSession(sess){var id=sess&&sess.user?sess.user.id:null;
+if(S.authReady&&id===S.uid)return;
+S.authReady=true;stopData();S.uid=id;S.authMode='in';S.stack=[];S.view={name:id?'home':'auth'};render(true);if(id)setTimeout(startData,0)}
+
+/* ---------- writes ---------- */
+function formErr(key,extra){var el=document.getElementById('formErr');if(el)el.textContent=key?t(key)+(extra?': '+extra:''):''}
+function val(id){var el=document.getElementById(id);return el?el.value.trim():''}
+function failMsg(e){console.warn(e);formErr('save_fail')}
+function ok(r){if(r.error){failMsg(r.error);return false}return true}
+
+function doAuth(){var email=val('aEmail'),pw=(document.getElementById('aPass')||{}).value||'',up=S.authMode==='up';
+if(!email||pw.length<6){formErr('auth_fail');return}
+var call=up?sb.auth.signUp({email:email,password:pw}):sb.auth.signInWithPassword({email:email,password:pw});
+call.then(function(r){if(r.error){formErr('auth_fail',r.error.message);return}
+if(up&&!(r.data&&r.data.session))formErr('confirm_email')})}
+
+function saveCompany(){var name=val('cName'),city=val('cCity');if(!name||!city){formErr('required');return}
+sb.from('companies').upsert({id:S.uid,name:name,type:val('cType')||'carrier',city:city,phone:val('cPhone')||null,about:val('cAbout')||null,updated_at:new Date().toISOString()}).then(function(r){
+if(!ok(r))return;return loadCompanies().then(function(){S.stack=[];S.view={name:'profile'};render(true)})})}
+
+function publishLoad(){var from=val('lFrom'),to=val('lTo'),date=val('lDate');
+if(!from||!to||!date){formErr('required');return}if(from===to){formErr('bad_route');return}
+var w=parseFloat(val('lWeight')),p=parseFloat(val('lPrice')),kind=S.view.kind||'cargo';
+sb.from('loads').insert({owner:S.uid,kind:kind,from_city:from,to_city:to,load_date:date,truck_type:val('lTruck')||'other',weight:isFinite(w)&&w>0?w:null,price:isFinite(p)&&p>0?p:null,cargo:val('lCargo')||null}).then(function(r){
+if(!ok(r))return;return loadLoads().then(function(){S.kind=kind;S.stack=[];S.view={name:'loads'};render(true);window.scrollTo(0,0)})})}
+
+function publishPost(){var text=val('pText');if(!text){formErr('required');return}
+sb.from('posts').insert({owner:S.uid,kind:val('pKind')||'news',text:text}).then(function(r){
+if(!ok(r))return;return loadPosts().then(function(){S.stack=[];S.view={name:'home'};render(true);window.scrollTo(0,0)})})}
+
+function toggleLike(id){if(needCompany())return;var p=S.posts.filter(function(x){return x.id===id})[0];if(!p)return;
+var q=(p.likes&&p.likes[S.uid])?sb.from('post_likes').delete().eq('post_id',id).eq('user_id',S.uid):sb.from('post_likes').insert({post_id:id,user_id:S.uid});
+q.then(function(r){if(r.error)console.warn(r.error);loadPosts()})}
+
+function sendMsg(){var inp=document.getElementById('msgInput'),text=inp.value.trim();if(!text||!S.view.other)return;
+inp.value='';inp.focus();
+sb.from('messages').insert({sender:S.uid,recipient:S.view.other,text:text.slice(0,2000)}).then(function(r){
+if(r.error){console.warn(r.error);inp.value=text;return}loadMsgs()})}
+
+function remove(table,id){sb.from(table).delete().eq('id',id).then(function(r){if(r.error)console.warn(r.error);S.confirmDel='';(table==='loads'?loadLoads():loadPosts()).then(function(){render(true)})})}
+
+/* ---------- events ---------- */
+$app.addEventListener('click',function(e){var el=e.target.closest('[data-act]');if(!el)return;var a=el.dataset.act,v=el.dataset.v,id=el.dataset.id;
+switch(a){
+case 'tab':goTab(v);break;
+case 'lang':S.lang=v;LS.set('alpa-lang',v);document.documentElement.lang=v;render(true);break;
+case 'kind':S.kind=v;render(true);break;
+case 'back':back();break;
+case 'auth-mode':S.authMode=S.authMode==='up'?'in':'up';render(true);break;
+case 'sign-out':sb.auth.signOut();break;
+case 'setup':push({name:'setup'});break;
+case 'save-company':saveCompany();break;
+case 'newload':if(!needCompany())push({name:'compose-load',kind:S.kind});break;
+case 'form-kind':S.view.kind=v;document.getElementById('kc').classList.toggle('on',v==='cargo');document.getElementById('kt').classList.toggle('on',v==='truck');
+var h1=document.querySelector('.ttl');if(h1)h1.textContent=t(v==='cargo'?'post_cargo':'post_truck');break;
+case 'publish-load':publishLoad();break;
+case 'newpost':if(!needCompany())push({name:'compose-post'});break;
+case 'plus':S.sheet=true;render(true);break;
+case 'sheet-close':S.sheet=false;render(true);break;
+case 'new-cargo':case 'new-truck':if(!needCompany())push({name:'compose-load',kind:a==='new-cargo'?'cargo':'truck'});break;
+case 'pro':push({name:'pro'});break;
+case 'join-pro':joinPro();break;
+case 'publish-post':publishPost();break;
+case 'company':push({name:'company',id:id});break;
+case 'contact':openChat(id);break;
+case 'open-chat':openChat(id);break;
+case 'like':toggleLike(id);break;
+case 'del-load':case 'del-post':var key=a+id;if(S.confirmDel!==key){S.confirmDel=key;render(true)}else remove(a==='del-load'?'loads':'posts',id);break;
+}});
+$app.addEventListener('change',function(e){var el=e.target.closest('[data-chg]');if(!el)return;
+if(el.dataset.chg==='from')S.fromF=el.value;else S.toF=el.value;render(true)});
+$app.addEventListener('submit',function(e){e.preventDefault();
+if(e.target.id==='msgForm')sendMsg();else if(e.target.id==='authForm')doAuth()});
+
+/* ---------- start ---------- */
+(function init(){
+document.documentElement.lang=S.lang;
+var okCfg=SUPABASE_URL.indexOf('https://')===0&&SUPABASE_KEY.length>20;
+if(!okCfg){S.error='no_config';S.authReady=true;render(true);return}
+if(!window.supabase){S.error='no_db';S.authReady=true;render(true);return}
+render(true);
+sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+sb.auth.onAuthStateChange(function(ev,sess){setTimeout(function(){setSession(sess)},0)});
+sb.auth.getSession().then(function(r){setSession(r.data&&r.data.session)});
+})();
+})();
+</script>
+</body>
+</html>
