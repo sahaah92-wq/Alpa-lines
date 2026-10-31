@@ -4,7 +4,7 @@ var LS={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}
 var saved=LS.get('alpa-lang');
 var S={lang:(saved==='ru'||saved==='en'||saved==='uz')?saved:'uz',view:{name:'home'},stack:[],
 companies:{},posts:[],loads:[],chats:[],msgs:[],kind:'cargo',fromF:'',toF:'',
-loaded:{companies:false,posts:false,loads:false,chats:false},error:'',uid:null,authReady:false,authMode:'in',allMsgs:[],confirmDel:''};
+loaded:{companies:false,posts:false,loads:false,chats:false},error:'',uid:null,authReady:false,authMode:'in',allMsgs:[],confirmDel:'',sheet:false,pro:false};
 var $app=document.getElementById('app');
 var STABLE=['compose-load','compose-post','setup','chat','auth'];
 
@@ -31,6 +31,7 @@ user:svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',2
 back:svg('<path d="M15 5l-7 7 7 7"/>',22),
 arrow:svg('<path d="M4 12h16M14 6l6 6-6 6"/>',18),
 plus:svg('<path d="M12 5v14M5 12h14"/>',18),
+plus24:svg('<path d="M12 5v14M5 12h14"/>',26),
 send:svg('<path d="M4 12l16-8-6 16-3-6.500z"/>',20),
 heart:svg('<path d="M12 20s-7-4.400-7-10a4 4 0 0 1 7-2.600A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/>',20),
 heartOn:svg('<path d="M12 20s-7-4.400-7-10a4 4 0 0 1 7-2.600A4 4 0 0 1 19 10c0 5.600-7 10-7 10z"/>',20,{fill:'currentColor'}),
@@ -41,12 +42,24 @@ function av(name,size){var s=String(name||'?'),h=0,i;for(i=0;i<s.length;i++)h+=s
 var ini=s.trim().split(/\s+/).slice(0,2).map(function(w){return w.charAt(0)}).join('').toUpperCase();
 return '<span class="av av'+(h%5)+'" style="width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*.36)+'px" aria-hidden="true">'+esc(ini||'?')+'</span>'}
 
+function vb(c){return c&&c.verified?'<svg class="vb" width="15" height="15" viewBox="0 0 24 24" role="img" aria-label="'+esc(t('verified'))+'"><circle cx="12" cy="12" r="11" fill="#0B7A75"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+function since(ts){if(!ts)return '—';var d=new Date(ts);if(S.lang==='uz')return UZM[d.getMonth()]+' '+d.getFullYear();return d.toLocaleDateString(S.lang==='ru'?'ru-RU':'en-GB',{month:'short',year:'numeric'})}
+function stories(){var ids=Object.keys(S.companies);if(!ids.length)return '';var now=Date.now(),recent={};
+S.posts.forEach(function(p){if(now-p.createdAt<259200000)recent[p.ownerId]=true});
+ids.sort(function(x,y){return (recent[y]?1:0)-(recent[x]?1:0)||S.companies[y].createdAt-S.companies[x].createdAt});
+return '<div class="stories" role="list">'+ids.slice(0,15).map(function(id){var c=S.companies[id],nm=c.name.length>12?c.name.slice(0,11)+'…':c.name;
+return '<button class="st" role="listitem" data-act="company" data-id="'+esc(id)+'"><span class="ring'+(recent[id]?' on':'')+'">'+av(c.name,50)+'</span><span class="stn">'+esc(nm)+'</span></button>'}).join('')+'</div>'}
+function check(txt){return '<li>'+svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>',18)+'<span>'+esc(txt)+'</span></li>'}
+function sheetHtml(){return '<div class="scrim" data-act="sheet-close"></div><div class="sheet" role="dialog" aria-label="'+esc(t('sheet_title'))+'"><h2>'+esc(t('sheet_title'))+'</h2>'
++'<button class="btn block" data-act="new-cargo">'+esc(t('post_cargo'))+'</button><button class="btn block soft" data-act="new-truck">'+esc(t('post_truck'))+'</button><button class="btn block ghost" data-act="newpost">'+esc(t('update_lbl'))+'</button><button class="btn block plain" data-act="sheet-close">'+esc(t('cancel'))+'</button></div>'}
+
 /* ---------- view builders ---------- */
 function barMain(){var b=['uz','ru','en'].map(function(l){return '<button class="lg'+(S.lang===l?' on':'')+'" data-act="lang" data-v="'+l+'" aria-pressed="'+(S.lang===l)+'">'+l.toUpperCase()+'</button>'}).join('');
 return '<header class="bar"><div class="in"><div class="brand"><span class="logo">'+ic.logo+'</span><span>Alpa Lines</span></div><div class="langs" role="group" aria-label="'+esc(t('language'))+'">'+b+'</div></div></header>'}
 function barSub(title,left){return '<header class="bar"><div class="in"><button class="icon" data-act="back" aria-label="'+esc(t('back'))+'">'+ic.back+'</button>'+(left||'')+'<h1 class="ttl">'+esc(title)+'</h1></div></header>'}
-function tabsBar(cur){var items=[['home',ic.home,'tab_home'],['loads',ic.truck,'tab_loads'],['chats',ic.chat,'tab_chats'],['profile',ic.user,'tab_profile']];
-return '<nav class="tabs" aria-label="Menu"><div class="in">'+items.map(function(x){return '<button class="tab'+(cur===x[0]?' on':'')+'" data-act="tab" data-v="'+x[0]+'"'+(cur===x[0]?' aria-current="page"':'')+'>'+x[1]+'<span>'+esc(t(x[2]))+'</span></button>'}).join('')+'</div></nav>'}
+function tabsBar(cur){var items=[['home',ic.home,'tab_home'],['loads',ic.truck,'tab_loads'],['plus'],['chats',ic.chat,'tab_chats'],['profile',ic.user,'tab_profile']];
+return '<nav class="tabs" aria-label="Menu"><div class="in">'+items.map(function(x){if(x[0]==='plus')return '<button class="fab" data-act="plus" aria-label="'+esc(t('sheet_title'))+'">'+ic.plus24+'</button>';
+return '<button class="tab'+(cur===x[0]?' on':'')+'" data-act="tab" data-v="'+x[0]+'"'+(cur===x[0]?' aria-current="page"':'')+'>'+x[1]+'<span>'+esc(t(x[2]))+'</span></button>'}).join('')+'</div></nav>'}
 function shell(bar,body,foot){return bar+'<main class="wrap">'+body+'</main>'+(foot||'')}
 
 function citySelect(id,val,anyLabel,cls,chg){var o=anyLabel?'<option value="">'+esc(anyLabel)+'</option>':'<option value="" disabled'+(val?'':' selected')+'></option>';
@@ -54,7 +67,7 @@ Object.keys(CITIES).forEach(function(k){o+='<option value="'+k+'"'+(val===k?' se
 return '<select id="'+id+'" class="'+(cls||'')+'"'+(chg?' data-chg="'+chg+'"':'')+'>'+o+'</select>'}
 
 function owner(c,ownerId,extra){var name=c?c.name:'—';
-return '<div class="head"><button class="who" data-act="company" data-id="'+esc(ownerId)+'">'+av(name,36)+'<span><span class="nm">'+esc(name)+'</span><span class="sub">'+esc(c?t(c.type)+' · '+cityName(c.city):'')+'</span></span></button>'+(extra||'')+'</div>'}
+return '<div class="head"><button class="who" data-act="company" data-id="'+esc(ownerId)+'">'+av(name,36)+'<span><span class="nm">'+esc(name)+vb(c)+'</span><span class="sub">'+esc(c?t(c.type)+' · '+cityName(c.city):'')+'</span></span></button>'+(extra||'')+'</div>'}
 
 function loadCard(l){var c=co(l.ownerId),mine=l.ownerId===S.uid,btn;
 if(mine)btn=delBtn('del-load',l.id);
@@ -75,7 +88,7 @@ if(!mine&&!p.demo)acts+='<button data-act="contact" data-id="'+esc(p.ownerId)+'"
 acts+='<span class="sp"></span>';
 if(p.demo)acts+='<span class="chip amber">'+esc(t('example'))+'</span>';
 if(mine)acts+=delBtn('del-post',p.id);
-return '<article class="card"><div class="head">'+'<button class="who" data-act="company" data-id="'+esc(p.ownerId)+'">'+av(c?c.name:'?',40)+'<span><span class="nm">'+esc(c?c.name:'—')+'</span><span class="sub">'+esc(c?t(c.type)+' · '+cityName(c.city):'')+' · '+esc(ago(p.createdAt))+'</span></span></button>'+kindChip(p.kind)+'</div>'
+return '<article class="card"><div class="head">'+'<button class="who" data-act="company" data-id="'+esc(p.ownerId)+'">'+av(c?c.name:'?',40)+'<span><span class="nm">'+esc(c?c.name:'—')+(c?vb(c):'')+'</span><span class="sub">'+esc(c?t(c.type)+' · '+cityName(c.city):'')+' · '+esc(ago(p.createdAt))+'</span></span></button>'+kindChip(p.kind)+'</div>'
 +'<p class="txt">'+esc(p.text)+'</p><div class="act">'+acts+'</div></article>'}
 
 function empty(text,btn){return '<div class="empty"><p>'+esc(text)+'</p>'+(btn||'')+'</div>'}
@@ -83,6 +96,7 @@ function loading(){return '<div class="sk"></div><div class="sk"></div>'}
 function createBanner(){return '<div class="banner"><span>'+esc(t('create_banner'))+'</span><button class="btn" data-act="setup">'+esc(t('create_btn'))+'</button></div>'}
 
 function viewHome(){var h='',me=myCo();
+if(S.loaded.companies)h+=stories();
 if(S.loaded.companies){h+=me?'<button class="teaser" data-act="newpost">'+av(me.name,36)+'<span>'+esc(t('share_prompt'))+'</span></button>':createBanner()}
 if(!S.loaded.posts)h+=loading();else if(!S.posts.length)h+=empty(t('no_posts'));else h+=S.posts.map(postCard).join('');
 return shell(barMain(),h,tabsBar('home'))}
@@ -101,9 +115,10 @@ else h=S.chats.map(function(c){var other=c.members.filter(function(m){return m!=
 return '<button class="chatrow" data-act="open-chat" data-id="'+esc(other)+'">'+av(oc?oc.name:'?',44)+'<span class="mid"><span class="nm">'+esc(oc?oc.name:'—')+'</span><span class="ls">'+esc((c.lastFrom===S.uid?'↩ ':'')+c.lastText)+'</span></span><span class="muted" style="font-size:12px">'+esc(ago(c.lastAt))+'</span></button>'}).join('');
 return shell(barMain(),h,tabsBar('chats'))}
 
-function coCard(c,id,mine){var phone=c.phone?'<p>'+esc(c.phone)+'</p>':'';
-return '<section class="card"><div class="head">'+av(c.name,56)+'<div style="min-width:0"><h2 style="font-size:19px;font-weight:800;letter-spacing:-.3px;overflow-wrap:anywhere">'+esc(c.name)+'</h2><p class="muted">'+esc(t(c.type)+' · '+cityName(c.city))+'</p></div></div>'
-+phone+(c.about?'<p class="txt">'+esc(c.about)+'</p>':'')
+function coCard(c,id,mine){var phone=c.phone?'<p>'+esc(c.phone)+'</p>':'',nl=S.loads.filter(function(l){return l.ownerId===id}).length,np=S.posts.filter(function(p){return p.ownerId===id}).length,
+stats='<div class="stats"><div><b>'+nl+'</b><span>'+esc(t('st_loads'))+'</span></div><div><b>'+np+'</b><span>'+esc(t('st_posts'))+'</span></div><div><b>'+esc(since(c.createdAt))+'</b><span>'+esc(t('st_since'))+'</span></div></div>';
+return '<section class="card"><div class="head">'+av(c.name,56)+'<div style="min-width:0"><h2 style="font-size:19px;font-weight:800;letter-spacing:-.3px;overflow-wrap:anywhere">'+esc(c.name)+' '+vb(c)+'</h2><p class="muted">'+esc(t(c.type)+' · '+cityName(c.city))+'</p></div></div>'
++stats+phone+(c.about?'<p class="txt">'+esc(c.about)+'</p>':'')
 +(c.demo?'<span class="chip amber" style="align-self:flex-start">'+esc(t('example'))+'</span>':'')
 +(mine?'<button class="btn ghost" data-act="setup" style="align-self:flex-start">'+esc(t('edit'))+'</button>':(c.demo?'':'<button class="btn" data-act="contact" data-id="'+esc(id)+'" style="align-self:flex-start">'+esc(t('message'))+'</button>'))+'</section>'}
 
@@ -117,6 +132,7 @@ function viewProfile(){var me=myCo(),h='';
 if(!S.loaded.companies)h=loading();
 else if(!me)h=createBanner();
 else h=coCard(me,S.uid,true)+listingsOf(S.uid,true);
+h+='<button class="proCard" data-act="pro"><span><b>'+esc(t('pro_card'))+'</b><span class="muted">'+esc(t('pro_card_d'))+'</span></span>'+ic.arrow+'</button>';
 h+='<button class="btn danger block" data-act="sign-out">'+esc(t('sign_out'))+'</button>';
 h+='<p class="note">Alpa Lines · '+esc(t('version'))+'</p>';
 return shell(barMain(),h,tabsBar('profile'))}
@@ -136,6 +152,16 @@ var h='<div><h2 style="font-size:22px;font-weight:800;letter-spacing:-.4px">'+es
 +'<p class="err" id="formErr" role="alert"></p>'
 +'<div class="row"><button class="btn ghost" data-act="back">'+esc(t('cancel'))+'</button><button class="btn" data-act="save-company">'+esc(t('save'))+'</button></div>';
 return shell(barSub(t('tab_profile')),h)}
+
+function viewPro(){var h='<section class="proHead"><div class="proTag"><span class="logo">'+ic.logo+'</span><b>ALPA LINES PRO</b><span class="chip amber">'+esc(t('soon'))+'</span></div><h2>'+esc(t('pro_head'))+'</h2><p>'+esc(t('pro_sub'))+'</p></section>'
++'<section class="card"><div class="row"><h3>'+esc(t('plan_free'))+'</h3><b class="muted">$0</b></div><ul class="ck muted">'+check(t('free_f1'))+check(t('free_f2'))+'</ul></section>'
++'<section class="card pro"><span class="pop">'+esc(t('popular'))+'</span><div class="row"><h3>Pro</h3><div class="price">$29 <span class="muted" style="font-size:13px;font-weight:600">/ '+esc(t('month'))+'</span></div></div>'
++'<ul class="ck">'+check(t('pro_f1'))+check(t('pro_f2'))+check(t('pro_f3'))+check(t('pro_f4'))+'</ul>'
++(S.pro?'<p class="chip teal" style="align-self:flex-start">'+esc(t('waitlist_done'))+'</p>':'<button class="btn block" data-act="join-pro">'+esc(t('waitlist_btn'))+'</button>')
++'<p class="note">'+esc(t('pro_year'))+'</p><p class="err" id="formErr" role="alert"></p></section>'
++'<section class="card"><div class="row" style="flex-wrap:nowrap"><div><h3>'+esc(t('boost_t'))+'</h3><p class="muted" style="font-size:13px">'+esc(t('boost_d'))+'</p></div><b class="price">$5</b></div></section>'
++'<p class="note">'+esc(t('waitlist_note'))+'</p>';
+return shell(barSub('Pro'),h)}
 
 function viewComposeLoad(){var k=S.view.kind||'cargo';
 var tr=TRUCKS.map(function(x){return '<option value="'+x+'">'+esc(t(x))+'</option>'}).join('');
@@ -179,7 +205,8 @@ else if(!S.uid)html=viewAuth();
 else{switch(S.view.name){
 case 'loads':html=viewLoads();break;case 'chats':html=viewChats();break;case 'profile':html=viewProfile();break;
 case 'company':html=viewCompany();break;case 'setup':html=viewSetup();break;case 'compose-load':html=viewComposeLoad();break;
-case 'compose-post':html=viewComposePost();break;case 'chat':html=viewChat();break;default:html=viewHome()}}
+case 'compose-post':html=viewComposePost();break;case 'chat':html=viewChat();break;case 'pro':html=viewPro();break;default:html=viewHome()}
+if(S.sheet)html+=sheetHtml()}
 $app.innerHTML=html;
 if(S.uid&&S.view.name==='chat')paintMsgs();
 }
@@ -190,9 +217,9 @@ el.innerHTML=pairMsgs().map(function(m){var out=m.from===S.uid;return '<div clas
 window.scrollTo(0,document.body.scrollHeight)}
 
 /* ---------- navigation ---------- */
-function goTab(n){S.stack=[];S.confirmDel='';S.view={name:n};render(true);window.scrollTo(0,0)}
-function push(v){S.stack.push(S.view);S.view=v;S.confirmDel='';render(true);window.scrollTo(0,0)}
-function back(){S.view=S.stack.pop()||{name:'home'};S.confirmDel='';render(true);window.scrollTo(0,0)}
+function goTab(n){S.stack=[];S.confirmDel='';S.sheet=false;S.view={name:n};render(true);window.scrollTo(0,0)}
+function push(v){S.stack.push(S.view);S.view=v;S.confirmDel='';S.sheet=false;render(true);window.scrollTo(0,0)}
+function back(){S.view=S.stack.pop()||{name:'home'};S.confirmDel='';S.sheet=false;render(true);window.scrollTo(0,0)}
 function needCompany(){if(myCo())return false;push({name:'setup'});return true}
 function openChat(other){if(!S.uid||other===S.uid)return;if(needCompany())return;push({name:'chat',other:other})}
 
@@ -202,7 +229,7 @@ function later(k,fn){clearTimeout(timers[k]);timers[k]=setTimeout(fn,250)}
 function done(name){S.loaded[name]=true;render()}
 function loadCompanies(){return sb.from('companies').select('*').then(function(r){
 if(r.error){console.warn(r.error);return done('companies')}
-var o={};r.data.forEach(function(c){o[c.id]={name:c.name,type:c.type,city:c.city,phone:c.phone||'',about:c.about||'',createdAt:Date.parse(c.created_at)}});S.companies=o;done('companies')})}
+var o={};r.data.forEach(function(c){o[c.id]={name:c.name,type:c.type,city:c.city,phone:c.phone||'',about:c.about||'',verified:!!c.verified,createdAt:Date.parse(c.created_at)}});S.companies=o;done('companies')})}
 function loadPosts(){return sb.from('posts').select('*, post_likes(user_id)').order('created_at',{ascending:false}).limit(60).then(function(r){
 if(r.error){console.warn(r.error);return done('posts')}
 S.posts=r.data.map(function(p){var likes={};(p.post_likes||[]).forEach(function(x){likes[x.user_id]=true});return {id:p.id,ownerId:p.owner,kind:p.kind,text:p.text,createdAt:Date.parse(p.created_at),likes:likes}});done('posts')})}
@@ -216,8 +243,11 @@ if(r.error){console.warn(r.error);return done('chats')}
 S.allMsgs=r.data.map(function(x){return {id:x.id,from:x.sender,to:x.recipient,text:x.text,at:Date.parse(x.created_at)}});S.chats=deriveChats();
 if(S.view.name==='chat')paintMsgs();done('chats')})}
 
+function loadPro(){return sb.from('pro_waitlist').select('user_id').eq('user_id',S.uid).then(function(r){if(r.error){console.warn(r.error);return}S.pro=!!(r.data&&r.data.length);if(S.view.name==='pro')render(true)})}
+function joinPro(){sb.from('pro_waitlist').insert({user_id:S.uid,plan:'pro'}).then(function(r){if(r.error&&r.error.code!=='23505'){failMsg(r.error);return}S.pro=true;render(true)})}
+
 function startData(){
-loadCompanies();loadPosts();loadLoads();loadMsgs();
+loadCompanies();loadPosts();loadLoads();loadMsgs();loadPro();
 chan=sb.channel('alpa')
 .on('postgres_changes',{event:'*',schema:'public',table:'companies'},function(){later('c',loadCompanies)})
 .on('postgres_changes',{event:'*',schema:'public',table:'posts'},function(){later('p',loadPosts)})
@@ -226,7 +256,7 @@ chan=sb.channel('alpa')
 .on('postgres_changes',{event:'*',schema:'public',table:'messages'},function(){later('m',loadMsgs)})
 .subscribe()}
 function stopData(){if(chan){try{sb.removeChannel(chan)}catch(e){}chan=null}
-S.companies={};S.posts=[];S.loads=[];S.allMsgs=[];S.chats=[];S.loaded={companies:false,posts:false,loads:false,chats:false}}
+S.companies={};S.posts=[];S.loads=[];S.allMsgs=[];S.chats=[];S.pro=false;S.sheet=false;S.loaded={companies:false,posts:false,loads:false,chats:false}}
 
 function setSession(sess){var id=sess&&sess.user?sess.user.id:null;
 if(S.authReady&&id===S.uid)return;
@@ -285,6 +315,11 @@ case 'form-kind':S.view.kind=v;document.getElementById('kc').classList.toggle('o
 var h1=document.querySelector('.ttl');if(h1)h1.textContent=t(v==='cargo'?'post_cargo':'post_truck');break;
 case 'publish-load':publishLoad();break;
 case 'newpost':if(!needCompany())push({name:'compose-post'});break;
+case 'plus':S.sheet=true;render(true);break;
+case 'sheet-close':S.sheet=false;render(true);break;
+case 'new-cargo':case 'new-truck':if(!needCompany())push({name:'compose-load',kind:a==='new-cargo'?'cargo':'truck'});break;
+case 'pro':push({name:'pro'});break;
+case 'join-pro':joinPro();break;
 case 'publish-post':publishPost();break;
 case 'company':push({name:'company',id:id});break;
 case 'contact':openChat(id);break;
