@@ -1,0 +1,31 @@
+alter table public.companies add column if not exists pro_until timestamptz;
+
+create or replace function public.protect_verified() returns trigger language plpgsql security definer set search_path = public as $f$
+begin
+  if auth.uid() is not null then
+    if tg_op = $q$INSERT$q$ then
+      new.verified := false;
+      new.pro_until := null;
+    else
+      new.verified := old.verified;
+      new.pro_until := old.pro_until;
+    end if;
+  end if;
+  return new;
+end
+$f$;
+
+create table if not exists public.payments (
+  id bigint generated always as identity primary key,
+  company_id uuid not null references public.companies(id) on delete cascade,
+  amount bigint not null,
+  status text not null default $$pending$$ check (status in ($$pending$$,$$paid$$,$$cancelled$$)),
+  click_trans_id bigint unique,
+  created_at timestamptz not null default now(),
+  paid_at timestamptz
+);
+
+alter table public.payments enable row level security;
+drop policy if exists payments_read_own on public.payments;
+create policy payments_read_own on public.payments for select to authenticated using (company_id = auth.uid());
+grant select on public.payments to authenticated;
